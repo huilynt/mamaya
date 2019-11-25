@@ -1,0 +1,33 @@
+body {
+  font-family: Helvetica, sans-serif;
+  font-size: 14px;
+}
+
+a {
+  color: #918393;
+}
+
+a:hover {
+  color: #5e617c;
+  text-decoration: none;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.cart-header {
+  /*background-color: #0040FF;*/
+  background-color: #017ca7;
+  color: white;
+}
+
+button[type="submit"] {
+  background-color: #787288;
+  color: white;
+}
+
+.bg-dark {
+  background-color: #455071 !important;
+}
