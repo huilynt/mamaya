@@ -9,7 +9,14 @@ if ($_POST) //Post Data received from Shopping cart page.
 {
 	// To Do 6 (DIY): Check to ensure each product item saved in the associative
 	//                array is not out of stock
+	foreach ($_SESSION['Items'] as $key => $item) {
+		$qry = "SELECT Quantity FROM product WHERE ProductID=$item[productId]";
+		$result = $conn->query($qry);
 
+		if ($conn->num_rows($result) > 0) {
+			echo ($result);
+		}
+	}
 
 	$paypal_data = '';
 	// Get all items from the shopping cart, concatenate to the variable $paypal_data
@@ -19,6 +26,7 @@ if ($_POST) //Post Data received from Shopping cart page.
 		$paypal_data .= '&L_PAYMENTREQUEST_0_AMT' . $key . '=' . urlencode($item["price"]);
 		$paypal_data .= '&L_PAYMENTREQUEST_0_NAME' . $key . '=' . urlencode($item["name"]);
 		$paypal_data .= '&L_PAYMENTREQUEST_0_NUMBER' . $key . '=' . urlencode($item["productId"]);
+		echo ($paypal_data);
 	}
 
 	// To Do 1A: Cmpute GST amount 7% for Singapore, round the figure to 2 decimal places
@@ -66,7 +74,7 @@ if ($_POST) //Post Data received from Shopping cart page.
 		$paypalurl = 'https://www' . $paypalmode .
 			'.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=' .
 			$httpParsedResponseAr["TOKEN"] . '';
-		header('Location: ' . $paypalurl);
+		// header('Location: ' . $paypalurl);
 	} else {
 		//Show error message
 		$MainContent .= "<div style='color:red'><b>SetExpressCheckout failed : </b>" .
@@ -126,11 +134,18 @@ if (isset($_GET["token"]) && isset($_GET["PayerID"])) {
 
 		// To Do 5 (DIY): Update stock inventory in product table 
 		//                after successful checkout
-		$qry = "UPDATE product SET Quantity=";
+		$qry = "SELECT * from shopcartitem WHERE ShopCartID=$_SESSION[Cart]";
+		$result = $conn->query($qry);
+		if ($conn->num_rows($result) > 0) {
+			while ($row = $conn->fetch_array($result)) {
+				$qry = "UPDATE product SET Quantity = Quantity-$row[Quantity] WHERE ProductID=$row[ProductID]";
+				$conn->query($qry);
+			}
+		}
 
 		// To Do 2: Update shopcart table, close the shopping cart (OrderPlaced=1)
 		$total = $_SESSION["SubTotal"] + $_SESSION["Tax"] + $_SESSION["ShipCharge"];
-		$qry = "UPDATE shopcart SET Quantity=$_SESSION[NumCartItem], OrderPlaced=1, SubTotal=$_SESSION[SubTotal], ShipCharge=$_SESSION[ShipCharge], Tax=$_SESSION[Tax], Total=$Total WHERE ShopCartID=$_SESSION[Cart]";
+		$qry = "UPDATE shopcart SET Quantity=$_SESSION[NumCartItem], OrderPlaced=1, SubTotal=$_SESSION[SubTotal], ShipCharge=$_SESSION[ShipCharge], Tax=$_SESSION[Tax], Total=$total WHERE ShopCartID=$_SESSION[Cart]";
 		$conn->query($qry);
 
 		//We need to execute the "GetTransactionDetails" API Call at this point 
@@ -174,7 +189,7 @@ if (isset($_GET["token"]) && isset($_GET["PayerID"])) {
 
 			// To Do 3: Insert an Order record with shipping information
 			//          Get the Order ID and save it in session variable.
-			$qry = "INSERT INTO orderdata (ShipName, ShipAddress, ShipCountry, ShipEmail, ShopCardID) VALUES ('$ShipName', '$ShipAddress', '$ShipCountry', '$ShipEmail', $_SESSION[Cart]";
+			$qry = "INSERT INTO orderdata (ShipName, ShipAddress, ShipCountry, ShipEmail, ShopCartID) VALUES ('$ShipName', '$ShipAddress', '$ShipCountry', '$ShipEmail', $_SESSION[Cart])";
 			$conn->query($qry);
 
 			$qry = "SELECT LAST_INSERT_ID() AS OrderID";

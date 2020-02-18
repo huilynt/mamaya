@@ -33,6 +33,13 @@ $MainContent .= "<p>Please sign up if you do not have an account.</p>";
 $MainContent .= "</div>";
 $MainContent .= "</div>";
 
+// 4th row - Login button
+$MainContent .= "<div clas='form-group row'>";
+$MainContent .= "<div class='col-sm-9 offset-sm-3'>";
+$MainContent .= "<a href='forgetPassword.php'>Forget Password</a>";
+$MainContent .= "</div>";
+$MainContent .= "</div>";
+
 $MainContent .= "</form>";
 $MainContent .= "</div>";
 // Include the Page Layout template

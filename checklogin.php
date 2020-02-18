@@ -15,18 +15,34 @@ $conn = new Mysql_Driver();
 // Connect to the MySQL database
 $conn->connect();
 // Define the INSERT SQL statement
-$qry = "SELECT * FROM Shopper WHERE email = '$email' AND password = '$pwd'";
+$qry = "SELECT * FROM Shopper WHERE email = '$email'";
 // Execute the SQL statement
 $result = $conn->query($qry);
 
-if ($result == true) { // SQL statement executed successfully
+if ($conn->num_rows($result) > 0) {
+	$row = $conn->fetch_array($result);
+	// Get the hashed password from database
+	$hashed_pwd = $row["Password"];
+	if (password_verify($pwd, $hashed_pwd)) {
+		//Save user's info in session variables
+		$_SESSION["ShopperID"] = $row["ShopperID"];
+		$_SESSION["ShopperName"] = $row["Name"];
 
-	if (mysqli_num_rows($result)) {
-		while ($row = $conn->fetch_array($result)) {
-			$_SESSION["ShopperID"] = $row["ShopperID"];
-			$_SESSION["ShopperName"] = $row["Name"];
-		}
 		// To Do 2 (Practical 4): Get active shopping cart
+		$qry = "SELECT * FROM shopcart WHERE ShopperID=$_SESSION[ShopperID] AND OrderPlaced=0";
+		$result = $conn->query($qry);
+
+		if ($conn->num_rows($result) > 0) {
+			$row = $conn->fetch_array($result);
+			$_SESSION["Cart"] = $row["ShopCartID"];
+
+			$qry = "SELECT * FROM shopcartitem WHERE ShopCartID=$_SESSION[Cart]";
+			$result = $conn->query($qry);
+			if ($conn->num_rows($result) > 0) {
+				$count = mysqli_num_rows($result);
+				$_SESSION["NumCartItem"] = $count;
+			}
+		}
 
 		// Redirect to home page
 		header("Location: index.php");
