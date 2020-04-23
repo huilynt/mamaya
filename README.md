@@ -1,3 +1,11 @@
 # mamaya
-eCommerce site developed with the module's practical portion
 
+#### Module
+eCommerce Application Development (ECAD)
+
+#### Objective
+Module's practicals
+
+#### Languages
+* PHP
+* MySQL
